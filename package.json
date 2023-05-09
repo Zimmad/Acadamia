@@ -1,0 +1,19 @@
+{
+  "name": "dev_camp_api",
+  "version": "1.0.0",
+  "description": "This is backend project written in node.In this project we will be managging routes, implementing http methods and creatig and managging mongodb database. I will be using express and mongoose for route mangement and database mangement. ",
+  "main": "server.js",
+  "scripts": {
+    "start": "NODE_ENV=production node server",
+    "dev": "nodemon server"
+  },
+  "author": "M Zimmmad(zim)",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}
