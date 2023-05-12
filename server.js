@@ -4,6 +4,7 @@ const morgan = require("morgan");
 
 //Routes
 const bootcamps = require("./routes/bootcamps.js");
+const courses = require("./routes/courses.js");
 
 // Middlewares
 const logger = require("./middleware/logger.js");
@@ -34,6 +35,7 @@ if (process.env.NODE_ENV === "development") {
 
 //Mount routes
 app.use("/api/v1/bootcamps", bootcamps);
+app.use("/api/v1/courses", courses);
 
 app.use(errorHandler);
 

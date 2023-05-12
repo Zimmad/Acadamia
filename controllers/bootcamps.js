@@ -30,10 +30,10 @@ exports.getBootcamps = async (req, res, next) => {
     // convert the querry string into JSON obj and then pass it to the .find(queryStr)
 
     if (!querryStr || querryStr.trim().length === 0) {
-      queryBootcamps = Bootcamp.find();
+      queryBootcamps = Bootcamp.find().populate("courses");
     } else {
       const jsonifyStr = JSON.parse(querryStr);
-      queryBootcamps = Bootcamp.find(jsonifyStr);
+      queryBootcamps = Bootcamp.find(jsonifyStr).populate("courses");
     }
 
     //Selecting Specific fields
@@ -150,18 +150,20 @@ exports.updateBootcamp = async (req, res, next) => {
 //@desc     Delete single Bootcamps
 //@route    DELETE api/v1/bootcamps/:id
 //@access   Private
-exports.deleteBootcamp = (err, req, res, next) => {
+exports.deleteBootcamp = async (err, req, res, next) => {
   try {
-    const bootcamp = Bootcamp.findByIdAndDelete(req.params.id);
+    console.log(`The object id passed as req.params is ${req.params.id}`);
+
+    const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id);
     if (!bootcamp) {
-      // res.status(400).json({
-      //   success: false,
-      // });
-      next(err);
+      res.status(400).json({
+        success: false,
+      });
+      // next(err);
     }
     res.status(200).json({
       seccess: true,
-      data: bootcamp,
+      data: {},
     });
   } catch (error) {
     // res.status(400).json({ success: false });
