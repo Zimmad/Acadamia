@@ -3,13 +3,12 @@ const router = express.Router({ mergeParams: true }); // to get req.params from 
 
 const {
   getCourses,
-  //   getBootcamps,
-  //   createBootcamp,
-  //   deleteBootcamp,
-  //   updateBootcamp,
-  //   getBootcampsInRadius,
+  getCourse,
+  addCourse,
+  updateCourse,
 } = require("../controllers/courses");
 
-router.route("/").get(getCourses);
+router.route("/").get(getCourses).post(addCourse);
+router.route("/:id").get(getCourse).put(updateCourse);
 
 module.exports = router;

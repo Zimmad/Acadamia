@@ -96,10 +96,16 @@ exports.getBootcamps = async (req, res, next) => {
 //@desc     Get single Bootcamps
 //@route    Get api/v1/bootcamps/:id
 //@access   Public
-exports.getBootcamp = async (err, req, res, next) => {
+exports.getBootcamp = async (req, res, next) => {
   try {
-    const bootcamp = Bootcamp.findById(req.params.id);
+    console.log(`The object id passed as req.params is ${req.params.id}`);
+
+    const bootcamp = await Bootcamp.findById(req.params.id);
     if (!bootcamp) {
+      res.status(400).send({
+        success: false,
+        data: "Bootcamp not found",
+      });
       next(err);
     }
     res.status(200).json({ success: true, data: bootcamp });
@@ -150,20 +156,22 @@ exports.updateBootcamp = async (req, res, next) => {
 //@desc     Delete single Bootcamps
 //@route    DELETE api/v1/bootcamps/:id
 //@access   Private
-exports.deleteBootcamp = async (err, req, res, next) => {
+exports.deleteBootcamp = async (req, res, next) => {
   try {
     console.log(`The object id passed as req.params is ${req.params.id}`);
 
-    const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id);
+    const bootcamp = await Bootcamp.findById(req.params.id);
+
     if (!bootcamp) {
       res.status(400).json({
         success: false,
       });
       // next(err);
     }
+    await bootcamp.remove();
     res.status(200).json({
       seccess: true,
-      data: {},
+      data: bootcamp,
     });
   } catch (error) {
     // res.status(400).json({ success: false });

@@ -22,7 +22,7 @@ const app = express();
 
 //Json parser middleware
 app.use(express.json(), logger, (req, res, next) => {
-  console.log(`${Date.now()} this is the current data string`);
+  console.log(`${Date.now()} this is the current date string`);
   next();
 });
 
