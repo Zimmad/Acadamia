@@ -1,21 +1,95 @@
 const ErrorResponse = require("../utils/errResponse");
 const Bootcamp = require("../models/bootcamps");
 const geocoder = require("../utils/geocoder");
+const { query } = require("express");
 
 //@desc     Get all Bootcamps
 //@route    Get api/v1/bootcamps
 //@access   Public
 exports.getBootcamps = async (req, res, next) => {
+  console.log(req.query, "Loging all request parameters");
+  let queryBootcamps;
   try {
-    const bootcamps = await Bootcamp.find();
-    res
-      .status(200)
-      .send({ success: true, count: bootcamps.length, data: bootcamps });
+    //*Copy req.querry
+    const reqQuerry = { ...req.query };
+
+    // fields to exclude
+    const removeFields = ["select", "sort", "page", "limit"];
+
+    //Loop over removeFields and delete from the reqQuerry
+    removeFields.forEach((param) => delete reqQuerry[param]);
+
+    //Stringify the querry JSON obj
+    let querryStr = JSON.stringify(reqQuerry);
+
+    //get the mongoose filter(operstors) like gt,lt,gte etc from the query string
+    querryStr = querryStr.replace(
+      /\b(gt|gte|lte|lt|in)\b/g,
+      (match) => `$${match}`
+    );
+    // convert the querry string into JSON obj and then pass it to the .find(queryStr)
+
+    if (!querryStr || querryStr.trim().length === 0) {
+      queryBootcamps = Bootcamp.find();
+    } else {
+      const jsonifyStr = JSON.parse(querryStr);
+      queryBootcamps = Bootcamp.find(jsonifyStr);
+    }
+
+    //Selecting Specific fields
+    if (req.query.select) {
+      const fields = req.query.select.split(",").join(" ");
+      queryBootcamps = queryBootcamps.select(fields);
+    }
+
+    //Sorting resources
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(",").join(" ");
+      console.log(sortBy);
+      queryBootcamps = queryBootcamps.sort(sortBy);
+    } else {
+      queryBootcamps = queryBootcamps.sort("-createdAt");
+    }
+
+    //Paginating responces.
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 25;
+    const skip = (page - 1) * limit; //skiping documents
+    queryBootcamps = queryBootcamps.skip(skip).limit(limit);
+
+    let startIndex = skip; // /* let startIndex = {...skip} does not works */
+    const endIndex = page * limit;
+    const totalDocs = await Bootcamp.countDocuments();
+
+    const bootcamps = await queryBootcamps;
+    // console.log(bootcamps);
+
+    const pagination = {};
+    if (endIndex < totalDocs) {
+      pagination.next = {
+        page: page + 1,
+        limit, // it is same as <limit: limit>
+      };
+    }
+
+    if (startIndex > 0) {
+      pagination.prev = {
+        page: page - 1,
+        limit, //It is same as limit:limit
+      };
+    }
+
+    res.status(200).send({
+      success: true,
+      count: bootcamps.length,
+      pagination, // It is same as //* pagination : pagination
+      data: bootcamps,
+    });
   } catch (error) {
-    // next(
-    //   new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404)
-    // );
-    next(err);
+    next(
+      new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404)
+    );
+    // ne xt(err);
   }
 };
 
