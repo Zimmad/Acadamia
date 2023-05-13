@@ -9,7 +9,7 @@ module.exports = function (err, req, res, next) {
   console.log(err);
 
   //Mongoose bad objectIdf
-  if (err.name.toLowerCase() === "casterror") {
+  if (err.name === "casterror") {
     const message = `Resource not found with id of ${err.value}`;
     error = new ErrorResponse(message, 404);
   }
@@ -20,7 +20,7 @@ module.exports = function (err, req, res, next) {
   }
 
   // Mongoose validation error. we get the errors from the err arrary ( in this case err is an array ) and then we get the messages.
-  if (error.name.toLowerCase() === "validationerror") {
+  if (error.name === "validationerror") {
     const message = Object.values(err.errors).map((val) => val.message);
     error = new ErrorResponse(message, 400);
   }

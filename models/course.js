@@ -37,7 +37,44 @@ const CourseSchema = new mongoose.Schema({
   bootcamp: {
     type: mongoose.Schema.ObjectId,
     ref: "Bootcamp", //the model(collection) we are refrencing to..
+    required: true,
   },
 });
 
+//* [Static method] to get average of course tutions
+CourseSchema.statics.getAverageCost = async function (bootcampId) {
+  const obj = await this.aggregate([
+    {
+      $match: { bootcamp: bootcampId },
+    },
+    {
+      $group: {
+        _id: "$bootcamp",
+        averageCost: { $avg: "$tuition" },
+      },
+    },
+  ]);
+
+  try {
+    console.log(obj);
+    const model = await this.model("Bootcamp").findByIdAndUpdate(bootcampId, {
+      averageCost: Math.ceil(obj[0].averageCost),
+    });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// Call averageCost after save
+CourseSchema.post("save", function () {
+  this.constructor.getAverageCost(this.bootcamp);
+});
+
+// Call averageCost before removing the course
+CourseSchema.pre("remove", function () {
+  this.constructor.getAverageCost(this.bootcamp);
+});
+
 module.exports = mongoose.model("Course", CourseSchema);
+
+//! Static methods are called directly on the model. they are like the properties of the model.

@@ -69,8 +69,6 @@ exports.addCourse = async (req, res, next) => {
   req.body.bootcamp = req.params.bootcampId;
 
   try {
-    console.log(req.params.bootcampId);
-
     const bootcamp = await Bootcamp.findById(req.params.bootcampId);
     if (!bootcamp) {
       res.status(400).send({
@@ -78,7 +76,6 @@ exports.addCourse = async (req, res, next) => {
         data: `Bootcamp with the id:${req.params.bootcampId} not found`,
       });
     }
-
     const course = await Course.create(req.body);
     if (!course) {
       res.status(400).send({
@@ -128,6 +125,8 @@ exports.updateCourse = async (req, res, next) => {
 exports.deleteCourse = async (req, res, next) => {
   let queryCourses;
 
+  console.log(req.params.id, "The id passed as req.params");
+
   try {
     const course = await Course.findById(req.params.id);
     if (!course) {
@@ -136,12 +135,14 @@ exports.deleteCourse = async (req, res, next) => {
         data: `Course with the id:${req.params.id} not found`,
       });
     }
-    await course.remove();
+
+    console.log(course, "The course we got by running the findby id query");
+    await course.deleteOne();
     res.status(200).json({
       success: true,
       data: {},
     });
   } catch (error) {
-    next(new ErrorResponse("Courses not found", 400));
+    next(new ErrorResponse("Could not delete course", 400));
   }
 };
