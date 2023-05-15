@@ -11,13 +11,20 @@ exports.getCourses = async (req, res, next) => {
   try {
     console.log(req.params.bootcampId);
     if (req.params.bootcampId) {
-      queryCourses = Course.find({ bootcamp: req.params.bootcampId });
+      const courses = await Course.find({ bootcamp: req.params.bootcampId });
+
+      //* we only want to use the pagination and querying stuff only we want to get all course.
+      //* we dont want to use them for specific bootcamp courses
+      return res.status(200).json({
+        success: true,
+        count: courses.length,
+        data: courses,
+      });
     } else {
       //   queryCourses = Course.find().populate("bootcamp"); // mongooseModel.find().populate(fieldName:String) will return all
-      queryCourses = Course.find().populate({
-        path: "bootcamp",
-        select: "name description",
-      });
+      // queryCourses = Course.find().populate({   path: "bootcamp",  select: "name description",   });
+
+      res.status(200).json(res.advancedResults);
     }
 
     const courses = await queryCourses;

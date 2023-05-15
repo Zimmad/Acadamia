@@ -1,10 +1,13 @@
 const express = require("express");
+const path = require("path");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
-
+const fileUpload = require("express-fileupload");
+const cookieParser = require("cookie-parser");
 //Routes
 const bootcamps = require("./routes/bootcamps.js");
 const courses = require("./routes/courses.js");
+const auth = require("./routes/auth.js");
 
 // Middlewares
 const logger = require("./middleware/logger.js");
@@ -25,17 +28,26 @@ app.use(express.json(), logger, (req, res, next) => {
   console.log(`${Date.now()} this is the current date string`);
   next();
 });
-
 console.log(process.env.NODE_ENV);
+
+//Cookie Parser
+app.use(cookieParser());
 
 //calling the middlewares
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
+// Uploading Files
+app.use(fileUpload());
+
+// Set static folder
+app.use(express.static(path.join(__dirname, "public")));
+
 //Mount routes
 app.use("/api/v1/bootcamps", bootcamps);
 app.use("/api/v1/courses", courses);
+app.use("/api/v1/auth", auth);
 
 app.use(errorHandler);
 

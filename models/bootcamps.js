@@ -35,13 +35,12 @@ const BootcampSchema = new mongoose.Schema(
     email: {
       tyoe: String,
       // match: [
-      //   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-      //   "Please enter a valid email.",
+      // /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/      //   "Please enter a valid email.",
       // ],
     },
     address: {
       type: String,
-      require: [true, "Please add an email"],
+      require: [true, "Please add an address"],
     },
     location: {
       //GeoJson point
