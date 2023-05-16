@@ -74,6 +74,7 @@ exports.getCourse = async (req, res, next) => {
 exports.addCourse = async (req, res, next) => {
   let queryCourses;
   req.body.bootcamp = req.params.bootcampId;
+  req.body.user = req.user.id;
 
   try {
     const bootcamp = await Bootcamp.findById(req.params.bootcampId);
@@ -83,7 +84,17 @@ exports.addCourse = async (req, res, next) => {
         data: `Bootcamp with the id:${req.params.bootcampId} not found`,
       });
     }
+
+    // Make sure the user is Bootcamp owner. (only the owner of bootcamp can add a course to his bootcamp)
+    if (bootcamp.user.toString() !== req.user.id && req.user.role !== "admin") {
+      res.status(404).json({
+        success: false,
+        data: `The user with id ${req.params.id} is not the owner of this bootcamp ${bootcamp.id} `,
+      });
+    }
+
     const course = await Course.create(req.body);
+
     if (!course) {
       res.status(400).send({
         success: false,
@@ -95,7 +106,8 @@ exports.addCourse = async (req, res, next) => {
       data: course,
     });
   } catch (error) {
-    next(new ErrorResponse("Courses not found", 400));
+    // next(new ErrorResponse("Courses not found", 400));
+    res.status(400).send(error);
   }
 };
 
@@ -113,6 +125,15 @@ exports.updateCourse = async (req, res, next) => {
         data: `Course with the id:${req.params.id} not found`,
       });
     }
+
+    // Make sure the user is Course owner.
+    if (course.user.toString() !== req.user.id && req.user.role !== "admin") {
+      res.status(404).json({
+        success: false,
+        data: `The user with id ${req.params.id} is not the owner of this course ${course.id} `,
+      });
+    }
+
     course = await Course.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
@@ -144,6 +165,14 @@ exports.deleteCourse = async (req, res, next) => {
     }
 
     console.log(course, "The course we got by running the findby id query");
+
+    // Make sure the user is Course owner.
+    if (course.user.toString() !== req.user.id && req.user.role !== "admin") {
+      res.status(404).json({
+        success: false,
+        data: `The user with id ${req.params.id} is not the owner of this course ${course.id} `,
+      });
+    }
     await course.deleteOne();
     res.status(200).json({
       success: true,

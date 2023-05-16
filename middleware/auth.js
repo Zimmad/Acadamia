@@ -44,7 +44,7 @@ exports.authorize = (...roles) => {
       console.log("inside the authorize block");
       if (!roles.includes(req.user.role)) {
         new ErrorResponse(
-          `${re.user.role} is Not authorized to access this route`,
+          `${req.user.role} is Not authorized to access this route`,
           403
         );
       }
