@@ -28,7 +28,7 @@ exports.getBootcamp = async (req, res, next) => {
         success: false,
         data: "Bootcamp not found",
       });
-      next(err);
+      // next(err);
     }
     res.status(200).json({ success: true, data: bootcamp });
   } catch (error) {
@@ -40,8 +40,28 @@ exports.getBootcamp = async (req, res, next) => {
 //@route    POST api/v1/bootcamps/
 //@access   Private
 exports.createBootcamp = async (req, res, next) => {
+  console.log("inside the created bootcamps");
   try {
+    // Add User to req.body
+    req.body.user = req.user.id;
+
+    // Check for published bootcamp
+    const publishedBootcamp = await Bootcamp.findOne({ user: req.user.id });
+
+    // Only admin can add more than one bootcamp
+    if (publishedBootcamp && req.user.role !== "admin") {
+      return (
+        res.status(400),
+        json({
+          success: false,
+          data: `The user with id of ${req.user.id} has already publishec a bootcamp`,
+        })
+      );
+    }
+
     const bootcamp = await Bootcamp.create(req.body);
+
+    console.log(bootcamp, "the bootcampm that just created");
 
     //for successful creation of resource we use the 201 success status code
     res.status(201).send({
@@ -49,10 +69,10 @@ exports.createBootcamp = async (req, res, next) => {
       data: bootcamp,
     });
   } catch (error) {
-    // res.status(400).send({
-    //   success: false,
-    //   err_message: error,
-    // });
+    res.status(400).send({
+      success: false,
+      err_message: error,
+    });
     next(err);
   }
 };
@@ -61,14 +81,24 @@ exports.createBootcamp = async (req, res, next) => {
 //@route    PUT api/v1/bootcamps/:id
 //@access   Private
 exports.updateBootcamp = async (req, res, next) => {
-  const bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, res.body, {
-    new: true,
-    runValidators: true,
-  });
+  let bootcamp = await Bootcamp.findById(req.params.id);
   if (!bootcamp) {
     // return res.status(400).json({ succes: false });
     next(err);
   }
+
+  // Make sure the user is Bootcamp owner
+  if (bootcamp.user.toString() !== req.user.id && req.user.role !== "admin") {
+    res.status(404).json({
+      success: false,
+      data: `The user with id ${req.params.id} is not the owner of this bootcamp `,
+    });
+  }
+
+  bootcamp = await Bootcamp.findByIdAndUpdate(res.body, {
+    new: true,
+    runValidators: true,
+  });
   res.status(200).json({
     success: true,
     data: bootcamp,
@@ -90,7 +120,16 @@ exports.deleteBootcamp = async (req, res, next) => {
       });
       // next(err);
     }
+    // Make sure the user is Bootcamp owner
+    if (bootcamp.user.toString() !== req.user.id && req.user.role !== "admin") {
+      res.status(404).json({
+        success: false,
+        data: `The user with id ${req.params.id} is not the owner of this bootcamp `,
+      });
+    }
+
     await bootcamp.remove();
+
     res.status(200).json({
       seccess: true,
       data: bootcamp,
@@ -152,6 +191,14 @@ exports.bootcampPhotUpload = async (req, res, next) => {
       res.status(404).json({
         success: false,
         data: `Bootcamp with the id of ${req.params.id} not found `,
+      });
+    }
+
+    // Make sure the user is Bootcamp owner
+    if (bootcamp.user.toString() !== req.user.id && req.user.role !== "admin") {
+      res.status(404).json({
+        success: false,
+        data: `The user with id ${req.params.id} is not the owner of this bootcamp `,
       });
     }
 

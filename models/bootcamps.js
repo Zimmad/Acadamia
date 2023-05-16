@@ -107,6 +107,12 @@ const BootcampSchema = new mongoose.Schema(
       type: String,
       default: Date.now(),
     },
+    // Creating a refrence or relationship to a User. Bootcamp shoud be related to a specific User
+    user: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Usera", //the model(collection) we are refrencing to..
+      required: true,
+    },
   },
 
   //this will enable the virtuals on the JSON and the js default object.
@@ -123,22 +129,34 @@ BootcampSchema.pre("save", function (next) {
   next();
 });
 
+//! [geocoder.geocode(this.address) ] is not working now.
 //Geocode and create location fields
 BootcampSchema.pre("save", async function (next) {
-  const loc = await geocoder.geocode(this.address);
-  this.location = {
-    type: "Point",
-    coordinates: [loc[0].longitude, loc[0].latitude],
-    formattedAddress: loc[0].formattedAddress,
-    street: loc[0].streetName,
-    city: loc[0].city,
-    state: loc[0].state,
-    country: loc[0].country,
-  };
+  console.log("inside the geocoder block");
+  try {
+    const loc = await geocoder.geocode(this.address);
+    console.log(
+      "inside the the geocoder block after the await geocodr.geocode"
+    );
+    this.location = {
+      type: "Point",
+      coordinates: [loc[0].longitude, loc[0].latitude],
+      formattedAddress: loc[0].formattedAddress,
+      street: loc[0].streetName,
+      city: loc[0].city,
+      state: loc[0].state,
+      country: loc[0].country,
+    };
 
-  //NOt saving the address field
-  this.address = undefined;
-  next();
+    //NOt saving the address field
+    this.address = undefined;
+    next();
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Geo Coder is unable to geocode the curernt location.",
+    });
+  }
 });
 
 //Cascade delete courses when a bootcamp is deleted

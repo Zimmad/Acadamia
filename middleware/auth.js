@@ -18,6 +18,7 @@ exports.protect = async function (req, res, next) {
     // }
 
     // Making sure if token exists
+    console.log(token);
     if (!token) {
       return next(
         new ErrorResponse("Not authorized to access this route", 401)
@@ -25,12 +26,31 @@ exports.protect = async function (req, res, next) {
     }
 
     // Varify Token
-    const decoded = jwt.verify(token, process.jwt.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
     console.log(decoded);
     req.user = await User.findById(decoded.id);
-
+    console.log("Authenticating the user reached an end");
     next();
   } catch (error) {
     return next(new ErrorResponse("Not authorized to access this route", 401));
   }
+};
+
+//Grant Role to specifec roles
+exports.authorize = (...roles) => {
+  return (req, res, next) => {
+    try {
+      console.log("inside the authorize block");
+      if (!roles.includes(req.user.role)) {
+        new ErrorResponse(
+          `${re.user.role} is Not authorized to access this route`,
+          403
+        );
+      }
+      next();
+    } catch (error) {
+      res.status(404).json("User Not authorized");
+    }
+  };
 };

@@ -100,3 +100,22 @@ const sendTokenResponse = (user, statusCode, res) => {
     .cookie("token", token, options)
     .json({ success: true, token: token });
 };
+
+//@desc     Get current logged in user
+//@route    Post api/v1/auth/me
+//@access   Private
+
+module.exports.getMe = async function (req, res, next) {
+  try {
+    const user = await User.findById(req.user.id);
+    res.status(200).json({
+      success: true,
+      data: user,
+    });
+  } catch (error) {
+    res.status(401).json({
+      success: false,
+      message: "User not found (Unauthorized)",
+    });
+  }
+};
