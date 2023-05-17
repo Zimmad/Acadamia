@@ -90,3 +90,77 @@ exports.addReview = async (req, res, next) => {
     next(new ErrorResponse("Reviews not found", 400));
   }
 };
+
+//@desc     Update Review
+//@route    PUT api/v1/reviews/:id
+//@access   Private
+
+exports.updateReview = async (req, res, next) => {
+  try {
+    let review = await Review.findById(req.params.id);
+    console.log(req.body, "Review ++++++++++++++++++==");
+    if (!review) {
+      return res.status(404).json({
+        success: false,
+        message: `No Review found with id:${req.params.id}`,
+      });
+    }
+
+    // Make sure review belongs to user or user is admin
+    if (review.user.toString() !== req.user.id && req.user.role !== "admin") {
+      return res.status(401).json({
+        success: false,
+        message: `Not authorize to update review with id:${req.params.id}`,
+      });
+    }
+    review = await Review.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+
+    console.log(review, "Review ++++++++++++++++++==");
+
+    res.status(201).json({
+      success: true,
+      data: review,
+    });
+  } catch (error) {
+    next(new ErrorResponse("Reviews not found", 400));
+  }
+};
+
+//@desc     Delete Review
+//@route    DELETE api/v1/reviews/:id
+//@access   Private
+
+exports.deleteReview = async (req, res, next) => {
+  try {
+    const review = await Review.findById(req.params.id);
+    console.log(req.body, "Review ++++++++++++++++++==");
+    if (!review) {
+      return res.status(404).json({
+        success: false,
+        message: `No Review found with id:${req.params.id}`,
+      });
+    }
+
+    // Make sure review belongs to user or user is admin
+    if (review.user.toString() !== req.user.id && req.user.role !== "admin") {
+      return res.status(401).json({
+        success: false,
+        message: `Not authorize to update review with id:${req.params.id}`,
+      });
+    }
+
+    console.log("Awianting the reviewing to be removed from the database");
+    // await Review.findByIdAndDelete(req.params.id);
+    await review.remove();
+
+    res.status(202).json({
+      success: true,
+      data: {},
+    });
+  } catch (error) {
+    next(new ErrorResponse("Could not delete the review", 400));
+  }
+};
