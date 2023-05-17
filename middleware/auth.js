@@ -41,6 +41,7 @@ exports.protect = async function (req, res, next) {
 exports.authorize = (...roles) => {
   return (req, res, next) => {
     try {
+      console.log(req.user);
       console.log("inside the authorize block");
       if (!roles.includes(req.user.role)) {
         new ErrorResponse(
@@ -50,6 +51,7 @@ exports.authorize = (...roles) => {
       }
       next();
     } catch (error) {
+      console.log(error);
       res.status(404).json("User Not authorized");
     }
   };

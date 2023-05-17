@@ -11,6 +11,7 @@ dotenv.config({ path: "./config/config.env" });
 const Bootcamp = require("./models/bootcamps");
 const Course = require("./models/course");
 const User = require("./models/user");
+const Review = require("./models/reviews");
 
 //connect to database
 
@@ -33,6 +34,9 @@ const courses = JSON.parse(
 );
 
 const users = JSON.parse(fs.readFileSync(`${__dirname}/_data/users.json`));
+
+const reviews = JSON.parse(fs.readFileSync(`${__dirname}/_data/reviews.json`));
+
 console.log(fs.readdirSync(`${__dirname}/_data/`));
 
 // console.log(bootcamps);
@@ -42,6 +46,7 @@ const importData = async () => {
     await Bootcamp.create(bootcamps);
     await Course.create(courses);
     await User.create(users);
+    await Review.create(reviews);
 
     console.log("Data Imported ...".green.inverse);
     process.exit();
@@ -55,6 +60,7 @@ const deleteData = async () => {
     await Bootcamp.deleteMany();
     await Course.deleteMany();
     await User.deleteMany();
+    await Review.deleteMany();
 
     console.log("Data destroyed...".red.inverse);
 

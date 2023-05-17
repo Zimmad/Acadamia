@@ -32,7 +32,7 @@ exports.createSingleUser = async (req, res, next) => {
     const user = await User.create(req.body);
     res.status(201).json({ succes: true, data: user });
   } catch (error) {
-    next(new ErrorResponse("Could not creatre the user", 400));
+    next(new ErrorResponse("Could not create the user", 400));
   }
 };
 
