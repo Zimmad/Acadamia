@@ -4,6 +4,13 @@ const dotenv = require("dotenv");
 const morgan = require("morgan");
 const fileUpload = require("express-fileupload");
 const cookieParser = require("cookie-parser");
+const expressMongoSanitize = require("express-mongo-sanitize");
+const helmet = require("helmet");
+const xss_clean = require("xss-clean");
+const hpp = require("hpp");
+const cors = require("cors");
+const expres_rate_limit = require("express-rate-limit");
+
 //Routes
 const bootcamps = require("./routes/bootcamps.js");
 const courses = require("./routes/courses.js");
@@ -42,8 +49,30 @@ if (process.env.NODE_ENV === "development") {
 // Uploading Files
 app.use(fileUpload());
 
+// Sanitize Data
+app.use(expressMongoSanitize());
+
+// Set security headers
+app.use(helmet());
+
 // Set static folder
 app.use(express.static(path.join(__dirname, "public")));
+
+// Preventing cross site scripting
+app.use(xss_clean());
+
+// Rate http request limiter
+const rateLimiter = expres_rate_limit.rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 mins
+  max: 100,
+});
+app.use(rateLimiter);
+
+// Prevent Http params polution
+app.use(hpp());
+
+// Enable Cross Origin Resourse Sharing
+app.use(cors());
 
 //Mount routes
 app.use("/api/v1/bootcamps", bootcamps);

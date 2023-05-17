@@ -103,6 +103,28 @@ module.exports.getMe = async function (req, res, next) {
   }
 };
 
+//@desc     Log User out / Clear Cookies
+//@route    Post api/v1/auth/logout
+//@access   Private
+
+module.exports.logOut = async function (req, res, next) {
+  try {
+    res.cookie("token", "none", {
+      expires: new Date(Date.now() + 10 * 1000),
+      httpOnly: true,
+    });
+    res.status(200).json({
+      success: true,
+      data: "loged out",
+    });
+  } catch (error) {
+    res.status(401).json({
+      success: false,
+      message: "User not found (Unauthorized)",
+    });
+  }
+};
+
 //@desc    Forgot password
 //@route    Post api/v1/auth/forgotpassword
 //@access   public
