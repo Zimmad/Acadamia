@@ -110,7 +110,7 @@ const BootcampSchema = new mongoose.Schema(
     // Creating a refrence or relationship to a User. Bootcamp shoud be related to a specific User
     user: {
       type: mongoose.Schema.ObjectId,
-      ref: "Usera", //the model(collection) we are refrencing to..
+      ref: "User", //the model(collection) we are refrencing to..
       required: true,
     },
   },
